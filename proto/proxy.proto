@@ -2,12 +2,18 @@ syntax = "proto3";
 
 service ProxyService {
   rpc SaveHeartbeat (NodeHeartbeatRequest) returns (Empty) {}
+  rpc MessageAll (JsonMessage) returns (Empty) {}
 }
 
 message Empty {}
 
 message NodeHeartbeatRequest {
   string id = 1;
-  string sentAt = 2;
+  string address = 2;
+  string sentAt = 3;
 }
 
+message JsonMessage {
+  string json = 1;
+  string senderId = 2;
+}

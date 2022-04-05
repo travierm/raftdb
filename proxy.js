@@ -1,34 +1,66 @@
-const grpc = require("@grpc/grpc-js");
-const protoLoader = require("@grpc/proto-loader");
+const { createGrpcServer, createGrpcService } = require("./src/grpc");
 
-const PROTO_PATH = "./proto/proxy.proto";
+const { proto, server } = createGrpcServer("proxy", "127.0.0.1:50051");
+class NodeStorage {
+  constructor() {
+    this.nodes = [];
+  }
 
-const options = {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-};
+  getByID(id) {
+    return this.nodes.find((node) => node.id === id);
+  }
+  create(node) {
+    const existingNode = this.getByID(node.id);
 
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, options);
-const proxyProto = grpc.loadPackageDefinition(packageDefinition);
+    if (!existingNode) {
+      this.nodes.push(node);
 
-const server = new grpc.Server();
+      return true;
+    }
 
-server.addService(proxyProto.ProxyService.service, {
+    return false;
+  }
+}
+
+const nodeStorage = new NodeStorage();
+
+server.addService(proto.ProxyService.service, {
+  MessageAll: (call, callback) => {
+    nodeStorage.nodes.forEach((node) => {
+      if (node.id === call.request.senderId) {
+        return;
+      }
+
+      node.raftService.HandleMessage(call.request, (error) => {
+        if (error) throw error;
+      });
+
+      callback(null, null);
+    });
+  },
   SaveHeartbeat: (call, callback) => {
-    console.log("got a heartbeat request from " + call.request.id);
+    console.log(
+      "[heartbeat] id: " +
+        call.request.id.substr(0, 7) +
+        " address: " +
+        call.request.address
+    );
+
+    if (!nodeStorage.getByID(call.request.id)) {
+      const raftService = createGrpcService(
+        "raft",
+        "RaftService",
+        call.request.address
+      );
+
+      nodeStorage.create({
+        raftService,
+        ...call.request,
+      });
+
+      console.log("created new node " + call.request.id.substr(0, 7));
+    }
 
     callback(null, null);
   },
 });
-
-server.bindAsync(
-  "127.0.0.1:50051",
-  grpc.ServerCredentials.createInsecure(),
-  (error, port) => {
-    console.log("RaftDB Proxy running at http://127.0.0.1:50051");
-    server.start();
-  }
-);

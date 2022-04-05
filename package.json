@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "raft:dev": "nodemon raft.js",
+    "node:dev": "nodemon node.js localhost:5100",
     "proxy:dev": "nodemon proxy.js"
   },
   "keywords": [],
