@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service ProxyService {
+  rpc SaveHeartbeat (NodeHeartbeatRequest) returns (Empty) {}
+}
+
+message Empty {}
+
+message NodeHeartbeatRequest {
+  string id = 1;
+  string sentAt = 2;
+}
+
