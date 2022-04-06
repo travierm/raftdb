@@ -9,8 +9,9 @@ message Empty {}
   
 message Event {
   string type = 1;
-  string json = 2;
-  string sender_id = 3;
+  string value = 2;
+  int64 term = 3;
+  string senderId = 4;
 }
 
 message JsonMessage {

@@ -16,7 +16,7 @@ const proxyService = createGrpcService(
   "127.0.0.1:50051"
 );
 
-const raftEngine = new RaftEngine(proxyService);
+const raftEngine = new RaftEngine(raftId, proxyService);
 
 server.addService(proto.RaftService.service, {
   HandleEvent: (call, callback) => {
@@ -41,15 +41,3 @@ const interval = setInterval(function () {
     }
   );
 }, 1000);
-
-setInterval(function () {
-  proxyService.MessageAll(
-    {
-      json: "hello world!",
-      senderId: raftId,
-    },
-    (error) => {
-      if (error) throw error;
-    }
-  );
-}, 4000);

@@ -25,6 +25,19 @@ class NodeStorage {
 const nodeStorage = new NodeStorage();
 
 server.addService(proto.ProxyService.service, {
+  SendEvent: (call, callback) => {
+    nodeStorage.nodes.forEach((node) => {
+      if (node.id === call.request.senderId) {
+        return;
+      }
+
+      node.raftService.HandleEvent(call.request, (error) => {
+        if (error) throw error;
+      });
+
+      callback(null, null);
+    });
+  },
   MessageAll: (call, callback) => {
     nodeStorage.nodes.forEach((node) => {
       if (node.id === call.request.senderId) {
