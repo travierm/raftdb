@@ -38,7 +38,7 @@ server.addService(proto.ProxyService.service, {
       callback(null, null);
     });
   },
-  SaveHeartbeat: (call, callback) => {
+  SendHeartbeat: (call, callback) => {
     console.log(
       "[heartbeat] id: " +
         call.request.id.substr(0, 7) +

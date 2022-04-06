@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 service ProxyService {
-  rpc SaveHeartbeat (NodeHeartbeatRequest) returns (Empty) {}
+  rpc SendHeartbeat (NodeHeartbeatRequest) returns (Empty) {}
   rpc MessageAll (JsonMessage) returns (Empty) {}
 }
 
